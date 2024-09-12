@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/tekana-ewallet/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/tekana-ewallet/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/tekana-ewallet",
+  "projects": {
+    "tekana-ewallet": {
+      "type": "application",
+      "root": "apps/tekana-ewallet",
+      "entryFile": "main",
+      "sourceRoot": "apps/tekana-ewallet/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/tekana-ewallet/tsconfig.app.json"
+      }
+    },
+    "api-gateway": {
+      "type": "application",
+      "root": "apps/api-gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/api-gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/api-gateway/tsconfig.app.json"
+      }
+    },
+    "users-microservice": {
+      "type": "application",
+      "root": "apps/users-microservice",
+      "entryFile": "main",
+      "sourceRoot": "apps/users-microservice/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/users-microservice/tsconfig.app.json",
+        "assets": [
+          "apps/users-microservice/src/proto/*.proto"
+        ],
+        "watchAssets": true
+      }
+    },
+    "transactions-microservice": {
+      "type": "application",
+      "root": "apps/transactions-microservice",
+      "entryFile": "main",
+      "sourceRoot": "apps/transactions-microservice/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/transactions-microservice/tsconfig.app.json"
+      }
+    },
+    "wallet-microservice": {
+      "type": "application",
+      "root": "apps/wallet-microservice",
+      "entryFile": "main",
+      "sourceRoot": "apps/wallet-microservice/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/wallet-microservice/tsconfig.app.json"
+      }
+    }
+    
+  }
+}
