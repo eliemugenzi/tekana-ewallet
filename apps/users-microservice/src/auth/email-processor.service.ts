@@ -19,8 +19,8 @@ export class EmailProcessor extends WorkerHost {
             const mailResponse = await this.sendGrid.send({
                 to: job?.data?.email,
                 from: {
-                    email: 'e.mugenzi@irembo.com',
-                    name: 'Tekana eWallet'
+                    email: process.env.EMAIL_SENDER,
+                    name: process.env.EMAIL_SENDER_NAME,
                 },
                 subject: job?.data?.subject,
                 text: job?.data?.message,
@@ -33,12 +33,8 @@ export class EmailProcessor extends WorkerHost {
                 status: HttpStatus.OK
             }
         } catch(error) {
-            console.log('MAIL ERROR', JSON.stringify(error?.response?.body, null, 2));
-        }
-
-
-
-        
+            this.logger.log('MAIL ERROR', JSON.stringify(error?.response?.body, null, 2));
+        }  
 
     }
 }

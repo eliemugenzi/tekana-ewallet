@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Wallet {
+  id Int @id @default(autoincrement())
+  accountNumber String
+  userId Int
+  type WalletType @default(value: SAVING)
+  balance Decimal @default(0.0)
+  createdAt DateTime @default(now())
+  activityLogs WalletActivityLog[]
+
+  @@map("wallets")
+}
+
+model WalletActivityLog {
+  id Int @id @default(autoincrement())
+  transactionId Int
+  action ActivityLogAction
+  amount Decimal
+  walletId Int 
+  wallet Wallet @relation(fields: [walletId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@map("wallet_activity_logs")
+}
+
+enum WalletType {
+  SAVING
+  PERSONAL
+  LOAN
+}
+
+enum ActivityLogAction {
+  DEBIT
+  CREDIT
+}

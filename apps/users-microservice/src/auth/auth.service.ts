@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { LoginRequestDto, RegisterRequestDto } from './auth.dto';
-import { LoginUserResponse, RegisterUserResponse } from './users.pb';
+import { LoginRequestDto, RegisterRequestDto, ValidateTokenDto } from './auth.dto';
+import { LoginUserResponse, RegisterUserResponse, ValidateTokenResponse } from './users.pb';
 import { JwtService } from './jwt.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
@@ -68,6 +68,33 @@ export class AuthService {
         token,
         message: 'Login successful!'
       }
+    }
+
+    public async validateToken({ token }: ValidateTokenDto): Promise<ValidateTokenResponse> {
+       const decoded = await this.jwtService.verify(token);
+
+       if(!decoded) {
+        return {
+            status: HttpStatus.FORBIDDEN,
+            message: 'Access denied',
+            userId: null
+        }
+       }
+
+       const user = await this.jwtService.validateUser(decoded?.id);
+       if(!user) {
+        return {
+            status: HttpStatus.FORBIDDEN,
+            message: 'Access denied',
+            userId: null
+        }
+       }
+
+       return {
+        status: HttpStatus.OK,
+        message: 'Access granted',
+        userId: user.id
+       }
     }
 
 }

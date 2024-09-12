@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { USER_SERVICE_NAME, UserServiceClient } from './users.pb';
+import { USER_SERVICE_NAME, UserServiceClient, ValidateTokenResponse } from './users.pb';
 import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
@@ -14,7 +14,7 @@ export class AuthService {
         this.svc = this.client.getService<UserServiceClient>(USER_SERVICE_NAME);
     }
 
-    public async validate(token: string): Promise<any> {
+    public async validate(token: string): Promise<ValidateTokenResponse> {
      return firstValueFrom(this.svc.validateToken({ token }));
     }
 }
