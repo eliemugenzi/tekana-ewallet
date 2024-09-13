@@ -34,11 +34,13 @@ export class JwtService {
     }
 
     public async validateUser(decoded: any): Promise<User> {
-        return this.db.user.findFirst({
+        const foundUser = await this.db.user.findFirst({
             where: {
-                id: decoded.id,
+                id: decoded?.id,
             }
         })
+
+        return foundUser
     }
 
 }

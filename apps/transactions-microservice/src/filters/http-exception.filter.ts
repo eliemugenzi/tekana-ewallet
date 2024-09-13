@@ -16,9 +16,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
         const req: Request = ctx.getRequest<Request>();
         const status: HttpStatus = exception.getStatus();
 
+        console.log('REQUEST___', JSON.stringify(ctx, null, 2));
+
         if (status === HttpStatus.BAD_REQUEST) {
             const res: any = exception.getResponse();
-
             return { status, message: res.message };
         }
 

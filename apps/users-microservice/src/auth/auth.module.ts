@@ -25,7 +25,14 @@ import { EmailProcessor } from './email-processor.service';
       }
     }),
     BullModule.registerQueue({
-      name: 'email'
+      name: 'email',
+      defaultJobOptions: {
+        attempts: 5, // Maximum 5 retries
+        backoff: {
+          type: 'exponential', // Exponential backoff strategy
+          delay: 3000 // 3 second delay between the retries
+        }
+      }
     })
   ]
 })

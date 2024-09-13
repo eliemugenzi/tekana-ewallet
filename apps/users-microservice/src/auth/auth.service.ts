@@ -72,7 +72,6 @@ export class AuthService {
 
     public async validateToken({ token }: ValidateTokenDto): Promise<ValidateTokenResponse> {
        const decoded = await this.jwtService.verify(token);
-
        if(!decoded) {
         return {
             status: HttpStatus.FORBIDDEN,
@@ -81,7 +80,7 @@ export class AuthService {
         }
        }
 
-       const user = await this.jwtService.validateUser(decoded?.id);
+       const user = await this.jwtService.validateUser(decoded);
        if(!user) {
         return {
             status: HttpStatus.FORBIDDEN,

@@ -1,5 +1,5 @@
-import { Controller, Get, Inject, OnModuleInit, Param, Post, Req, UseGuards } from '@nestjs/common';
-import { FindWalletRequest, FindWalletResponse, GetWalletsRequest, GetWalletsResponse, NewWalletRequest, NewWalletResponse, WALLET_SERVICE_NAME, WalletServiceClient } from './wallet.pb';
+import { Body, Controller, Get, Inject, OnModuleInit, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { DepositMoneyRequest, DepositMoneyResponse, FindWalletRequest, FindWalletResponse, GetWalletsRequest, GetWalletsResponse, NewWalletRequest, NewWalletResponse, TopupMoneyRequest, TopupMoneyResponse, WALLET_SERVICE_NAME, WalletServiceClient } from './wallet.pb';
 import { ClientGrpc } from '@nestjs/microservices';
 import { AuthGuard } from '../auth/auth.guard';
 import { Request } from 'express';
@@ -42,6 +42,18 @@ export class WalletController implements OnModuleInit {
       }
 
       return this.svc.findWallet(body);
+    }
+
+    @Post('/deposit')
+    @UseGuards(AuthGuard)
+    private async depositMoney(@Body() body: DepositMoneyRequest): Promise<Observable<DepositMoneyResponse>> {
+       return this.svc.depositMoney(body);
+    }
+
+    @Post('/topup')
+    @UseGuards(AuthGuard)
+    private async topUpWallet(@Body() body: TopupMoneyRequest): Promise<Observable<TopupMoneyResponse>> {
+      return this.svc.topup(body);
     }
 
 

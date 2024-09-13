@@ -14,6 +14,7 @@ export class EmailProcessor extends WorkerHost {
 
     }
 
+
     async process(job: Job): Promise<any> {
         try {
             const mailResponse = await this.sendGrid.send({
@@ -34,6 +35,7 @@ export class EmailProcessor extends WorkerHost {
             }
         } catch(error) {
             this.logger.log('MAIL ERROR', JSON.stringify(error?.response?.body, null, 2));
+            throw error; // Propagate the error so that BullMQ knows to retry the job
         }  
 
     }

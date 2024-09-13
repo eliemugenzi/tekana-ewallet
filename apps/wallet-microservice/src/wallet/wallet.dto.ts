@@ -1,5 +1,5 @@
 import { IsString, IsNumber, IsEnum } from 'class-validator';
-import { FindWalletRequest, GetWalletsRequest, NewWalletRequest } from "./wallet.pb";
+import { DepositMoneyRequest, FindWalletRequest, GetWalletsRequest, NewWalletRequest, TopupMoneyRequest, WithdrawMoneyRequest } from "./wallet.pb";
 import { WalletType } from '@prisma/client';
 
 export class CreateWalletDto implements NewWalletRequest {
@@ -17,4 +17,32 @@ export class FindWalletDto implements FindWalletRequest {
 export class GetWalletsDto implements GetWalletsRequest {
     @IsNumber()
     userId: number;
+}
+
+export class WithdrawMoneyDto implements WithdrawMoneyRequest {
+    @IsString()
+    accountNumber: string;
+    @IsNumber()
+    amount: number;
+    @IsNumber()
+    transactionId: number;
+}
+
+export class DepositMoneyDto implements DepositMoneyRequest {
+    @IsString()
+    accountNumber: string;
+    
+    @IsNumber()
+    amount: number;
+    
+    @IsNumber()
+    transactionId: number;
+}
+
+export class TopUpDto implements TopupMoneyRequest {
+    @IsString()
+    accountNumber: string;
+
+    @IsNumber()
+    amount: number;
 }

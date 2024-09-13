@@ -11,7 +11,8 @@
     "start:dev": "npm run prebuild && nest start --watch",
     "proto:install": "npm i git@github.com:eliemugenzi/tew-protos.git",
     "proto:users": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/tew-protos --ts_proto_out=src/auth node_modules/tew-protos/users.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
-    "proto:wallets": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/tew-protos --ts_proto_out=src/wallet node_modules/tew-protos/wallet.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb"
+    "proto:wallets": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/tew-protos --ts_proto_out=src/wallet node_modules/tew-protos/wallet.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
+    "proto:transactions": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/tew-protos --ts_proto_out=src/transaction node_modules/tew-protos/transactions.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.11.2",
