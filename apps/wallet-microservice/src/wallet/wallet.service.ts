@@ -6,9 +6,11 @@ import {
   FindWalletDto,
   GetWalletsDto,
   TopUpDto,
+  WalletActivityLogsDto,
   WithdrawMoneyDto,
 } from './wallet.dto';
 import {
+  ActivityLogResponse,
   DepositMoneyResponse,
   FindWalletResponse,
   GetWalletsResponse,
@@ -295,6 +297,46 @@ export class WalletService implements OnModuleInit {
     return {
       status: HttpStatus.OK,
       message: 'Wallet topup complete!'
+    }
+  }
+
+  public async getActivityLog(data: WalletActivityLogsDto): Promise<ActivityLogResponse> {
+    const offset = data.limit * (data.page - 1);
+    const foundWallet = await this.db.wallet.findFirst({
+      where: {
+        accountNumber: data.accountNumber,
+      }
+    })
+
+    if(!foundWallet) {
+      return {
+        status: HttpStatus.NOT_FOUND,
+        message: 'Wallet not found',
+        data: null,
+        meta:  null
+      }
+    }
+
+    const activityLogs = await this.db.walletActivityLog.findMany({
+      where: {
+        walletId: foundWallet.id
+      },
+      skip: offset,
+      take: data.limit,
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    return {
+      status: HttpStatus.OK,
+      message: null,
+      data: activityLogs,
+      meta: {
+        page: data.page,
+        pages: Math.ceil(activityLogs.length / data.limit),
+        total: activityLogs.length
+      }
     }
   }
 

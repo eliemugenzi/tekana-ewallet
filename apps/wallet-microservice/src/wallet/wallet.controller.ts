@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { WalletService } from './wallet.service';
-import { CreateWalletDto, DepositMoneyDto, FindWalletDto, GetWalletsDto, TopUpDto, WithdrawMoneyDto } from './wallet.dto';
-import { DepositMoneyResponse, FindWalletResponse, GetWalletsResponse, NewWalletResponse, TopupMoneyResponse, WALLET_SERVICE_NAME, WithdrawMoneyResponse } from './wallet.pb';
+import { CreateWalletDto, DepositMoneyDto, FindWalletDto, GetWalletsDto, TopUpDto, WalletActivityLogsDto, WithdrawMoneyDto } from './wallet.dto';
+import { ActivityLogResponse, DepositMoneyResponse, FindWalletResponse, GetWalletsResponse, NewWalletResponse, TopupMoneyResponse, WALLET_SERVICE_NAME, WithdrawMoneyResponse } from './wallet.pb';
 import { GrpcMethod } from '@nestjs/microservices';
 
 @Controller('wallet')
@@ -37,5 +37,11 @@ export class WalletController {
     private topUpMoney(data: TopUpDto): Promise<TopupMoneyResponse> {
         return this.walletService.topUp(data);
     }
+
+    @GrpcMethod(WALLET_SERVICE_NAME, "GetWalletActivityLogs")
+    private getTransactionHistory(data: WalletActivityLogsDto): Promise<ActivityLogResponse> {
+        return this.walletService.getActivityLog(data);
+    }
+
 
 }

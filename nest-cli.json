@@ -10,15 +10,6 @@
   "monorepo": true,
   "root": "apps/tekana-ewallet",
   "projects": {
-    "tekana-ewallet": {
-      "type": "application",
-      "root": "apps/tekana-ewallet",
-      "entryFile": "main",
-      "sourceRoot": "apps/tekana-ewallet/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/tekana-ewallet/tsconfig.app.json"
-      }
-    },
     "api-gateway": {
       "type": "application",
       "root": "apps/api-gateway",

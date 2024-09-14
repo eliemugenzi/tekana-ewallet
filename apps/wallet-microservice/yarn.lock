@@ -5117,7 +5117,7 @@ test-exclude@^6.0.0:
 
 "tew-protos@github:eliemugenzi/tew-protos":
   version "1.0.0"
-  resolved "git+ssh://git@github.com/eliemugenzi/tew-protos.git#449b7a4f417edbcd9345155c1e7494ae4aa07e1d"
+  resolved "git+ssh://git@github.com/eliemugenzi/tew-protos.git#2c8bb00fb2751e4e369619d5ee23817c611348a8"
 
 text-table@^0.2.0:
   version "0.2.0"
