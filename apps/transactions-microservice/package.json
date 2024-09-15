@@ -24,6 +24,7 @@
     "@nestjs/microservices": "^10.4.1",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.4.1",
+    "@nestjs/typeorm": "^10.0.2",
     "@prisma/client": "^5.19.1",
     "@sendgrid/mail": "^8.1.3",
     "bcryptjs": "^2.4.3",
@@ -36,7 +37,8 @@
     "pg": "^8.12.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "tew-protos": "github:eliemugenzi/tew-protos"
+    "tew-protos": "github:eliemugenzi/tew-protos",
+    "typeorm": "^0.3.20"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.4.5",

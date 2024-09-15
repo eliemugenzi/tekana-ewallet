@@ -5,12 +5,23 @@ import { LoginUserResponse, RegisterUserResponse, ValidateTokenResponse } from '
 import { JwtService } from './jwt.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly db: DatabaseService, private readonly jwtService: JwtService, @InjectQueue('email') private readonly emailQueue: Queue) {}
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>;
+    constructor(private readonly jwtService: JwtService, @InjectQueue('email') private readonly emailQueue: Queue) {}
     public async register(payload: RegisterRequestDto): Promise<RegisterUserResponse> {
-        const foundUser = await this.db.user.findFirst({
+        // const foundUser = await this.db.user.findFirst({
+        //     where: {
+        //         email: payload.email
+        //     }
+        // })
+
+        const foundUser = await this.userRepository.findOne({
             where: {
                 email: payload.email
             }
@@ -23,12 +34,18 @@ export class AuthService {
             }
         }
 
-        await this.db.user.create({
-            data: {
-                ...payload,
-                password: this.jwtService.encodePassword(payload.password),
-            }
-        })
+        // await this.db.user.create({
+        //     data: {
+        //         ...payload,
+        //         password: this.jwtService.encodePassword(payload.password),
+        //     }
+        // })
+
+        await this.userRepository.create({
+            ...payload,
+            password: this.jwtService.encodePassword(payload.password),
+
+        }).save()
 
         this.emailQueue.add('sendEmail', { email: payload.email, subject: 'Account created', message: `Dear ${payload.fullName}, your account has been created!` })
 
@@ -39,11 +56,17 @@ export class AuthService {
     }
 
     public async login(payload: LoginRequestDto): Promise<LoginUserResponse> {
-      const foundUser = await this.db.user.findFirst({
+    //   const foundUser = await this.db.user.findFirst({
+    //     where: {
+    //         email: payload.email
+    //     }
+    //   })
+
+    const foundUser = await this.userRepository.findOne({
         where: {
             email: payload.email
         }
-      })
+    })
 
       if(!foundUser) {
         return {

@@ -7,11 +7,14 @@ import { JwtStrategy } from './strategy/jwt.strategy';
 import { DatabaseService } from 'src/database/database.service';
 import { BullModule } from '@nestjs/bullmq';
 import { EmailProcessor } from './email-processor.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, JwtService, JwtStrategy, DatabaseService, EmailProcessor],
+  providers: [AuthService, JwtService, JwtStrategy, EmailProcessor],
   imports: [
+    TypeOrmModule.forFeature([User]),
     JwtModule.register({
       secret: 'wahala@2024',
       signOptions: {
@@ -20,8 +23,8 @@ import { EmailProcessor } from './email-processor.service';
     }),
     BullModule.forRoot({
       connection: {
-        host: 'localhost',
-        port: 6379
+        host: process.env.REDIS_HOST,
+        port: 6379,
       }
     }),
     BullModule.registerQueue({

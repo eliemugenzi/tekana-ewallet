@@ -8,6 +8,7 @@ services:
       - "frontend"
       - "backend"
       - "userdomain"
+      - "redis-net"
     ports:
       - "50051:50051"
     build:
@@ -23,6 +24,15 @@ services:
       SENDGRID_API_KEY: ${SENDGRID_API_KEY}
       EMAIL_SENDER_NAME: ${EMAIL_SENDER_NAME}
       EMAIL_SENDER: ${EMAIL_SENDER}
+      DATABASE_HOST: "tew-users"
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: "tew-users"
+      DATABASE_USER: "postgres"
+      DATABASE_PASSWORD: "Mysecret__123"
+      USER_SERVICE_URL: "tekana-user-service"
+      WALLET_SERVICE_URL: "tekana-wallet-service"
+      TRANSACTIONS_SERVICE_URL: "tekana-transactions-service"
+      REDIS_HOST: "redis"
 
 
   tekana-wallet-service:
@@ -43,6 +53,14 @@ services:
       DATABASE_URL: ${WALLETS_DATABASE_URL}
       TRANSACTIONS_PORT: "50053"
       PORT: "50052"
+      DATABASE_HOST: "tew-wallets"
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: "tew-wallets"
+      DATABASE_USER: "postgres"
+      DATABASE_PASSWORD: "Mysecret__123"
+      USER_SERVICE_URL: "tekana-user-service"
+      WALLET_SERVICE_URL: "tekana-wallet-service"
+      TRANSACTIONS_SERVICE_URL: "tekana-transactions-service"
 
 
   tekana-transactions-service:
@@ -62,9 +80,16 @@ services:
       NODE_ENV: "test"
       URL: "0.0.0.0"
       PORT: "50053"
-      WALLET_SERVICE_URL: "tekana-wallet-service"
       WALLETS_PORT: "50052"
       DATABASE_URL: ${TRANSACTIONS_DATABASE_URL}
+      DATABASE_HOST: "tew-transactions"
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: "tew-transactions"
+      DATABASE_USER: "postgres"
+      DATABASE_PASSWORD: "Mysecret__123"
+      USER_SERVICE_URL: "tekana-user-service"
+      WALLET_SERVICE_URL: "tekana-wallet-service"
+      TRANSACTIONS_SERVICE_URL: "tekana-transactions-service"
 
   tekana-api-gateway:
     image: "tekana-api-gateway:dev"
@@ -83,9 +108,9 @@ services:
       PORT: "3000"
       USER_SERVICE_URL: "tekana-user-service"
       USER_SERVICE_PORT: "50051"
-      WALLET_SERVICE_URL: "tekana-wallet-svc"
+      WALLET_SERVICE_URL: "tekana-wallet-service"
       WALLET_SERVICE_PORT: "50052"
-      TRANSACTIONS_SERVICE_URL: "tekana-transaction-svc"
+      TRANSACTIONS_SERVICE_URL: "tekana-transactions-service"
       TRANSACTIONS_SERVICE_PORT: "50053"
 
   # swagger-ui:
@@ -149,6 +174,8 @@ services:
     restart: "on-failure"
   redis:
     image: redis/redis-stack-server:7.2.0-v6
+    networks:
+      - "redis-net"
     ports:
       - 6379:6379
     healthcheck:
@@ -163,3 +190,4 @@ networks:
   userdomain:
   walletdomain:
   transactiondomain:
+  redis-net:

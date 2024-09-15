@@ -4,11 +4,14 @@ import { WalletController } from './wallet.controller';
 import { DatabaseService } from 'src/database/database.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TRANSACTION_SERVICE_NAME, TRANSACTIONS_PACKAGE_NAME } from './transactions.pb';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Wallet } from './entities/wallet.entity';
+import { WalletActivityLog } from './entities/wallet-activity-log.entity';
 
 @Module({
-  providers: [WalletService, DatabaseService],
+  providers: [WalletService],
   controllers: [WalletController],
-  imports: [
+  imports: [TypeOrmModule.forFeature([Wallet, WalletActivityLog]),
     ClientsModule.register([
       {
         name: TRANSACTION_SERVICE_NAME,

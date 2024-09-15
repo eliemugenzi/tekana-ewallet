@@ -1,14 +1,20 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { TransactionsController } from './transactions.controller';
-import { DatabaseService } from '../database/database.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { WALLET_SERVICE_NAME, WALLETS_PACKAGE_NAME } from './wallet.pb';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Transaction } from './entities/transaction.entity';
+import { ConfigModule } from '@nestjs/config';
 
+
+@Global()
 @Module({
-  providers: [TransactionsService, DatabaseService],
+  providers: [TransactionsService],
   controllers: [TransactionsController],
   imports: [
+    ConfigModule.forRoot(),
+    TypeOrmModule.forFeature([Transaction]),
     ClientsModule.register(
       [
         {

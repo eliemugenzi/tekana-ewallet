@@ -22,7 +22,6 @@ export class TransactionController implements OnModuleInit {
             ...req.body,
             userId: req['userId']
         }
-        console.log({ payload })
         return this.svc.createTransaction(payload);
     }
 

@@ -28,7 +28,7 @@ export interface FindWalletRequest {
 export interface WalletActivityLog {
   transactionId: number;
   action: string;
-  amount: Decimal;
+  amount: number;
 }
 
 export interface WalletData {
@@ -36,7 +36,7 @@ export interface WalletData {
   accountNumber: string;
   userId: number;
   type: string;
-  balance: Decimal;
+  balance: number;
   activityLogs: WalletActivityLog[];
 }
 
