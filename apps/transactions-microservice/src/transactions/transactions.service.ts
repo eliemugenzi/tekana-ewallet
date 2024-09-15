@@ -1,5 +1,4 @@
 import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
 import { CreateTransactionDto, ValidateTransactionDto } from './transactions.dto';
 import { NewTransactionResponse, ValidateTransactionResponse } from './transactions.pb';
 import {
@@ -9,14 +8,19 @@ import {
 } from './wallet.pb';
 import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Transaction } from './entities/transaction.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TransactionsService implements OnModuleInit {
+  @InjectRepository(Transaction)
+  private readonly transactionRepository: Repository<Transaction>;
   private walletSvc: WalletServiceClient;
   @Inject(WALLET_SERVICE_NAME)
   private readonly client: ClientGrpc;
 
-  constructor(private readonly db: DatabaseService) {}
+
 
   onModuleInit() {
       this.walletSvc = this.client.getService<WalletServiceClient>(WALLET_SERVICE_NAME);
@@ -28,7 +32,7 @@ export class TransactionsService implements OnModuleInit {
     const senderWallet: FindWalletResponse = await firstValueFrom(
       this.walletSvc.findWallet({ accountNumber: payload.senderAccountNumber }),
     );
-
+    
     const receiverWallet: FindWalletResponse = await firstValueFrom(
       this.walletSvc.findWallet({
         accountNumber: payload.receiverAccountNumber,
@@ -67,108 +71,92 @@ export class TransactionsService implements OnModuleInit {
       };
     }
 
+
     try {
-      // Perform database transactions
-      const result = await this.db.$transaction(async (tx) => {
-        const transaction = await tx.transaction.create({
-          data: payload,
-        });
+      const transaction = await this.transactionRepository.create({ ...payload }).save();
+     
+      const withdrawMoneyData = await firstValueFrom(
+        this.walletSvc.withdrawMoney({
+          accountNumber: payload.senderAccountNumber,
+          amount: payload.amount,
+          transactionId: transaction.id,
+        }),
+      );
 
-        const withdrawMoneyData = await firstValueFrom(
-          this.walletSvc.withdrawMoney({
-            accountNumber: payload.senderAccountNumber,
-            amount: payload.amount,
-            transactionId: transaction.id,
-          }),
-        );
-
-        if (![HttpStatus.OK, HttpStatus.CREATED].includes(withdrawMoneyData.status)) {
-          await tx.transaction.update({
-            where: {
-              id: transaction.id,
-            },
-            data: {
-              status: 'FAILED',
-            },
-          });
-
-          return {
-            status: HttpStatus.CONFLICT,
-            message: withdrawMoneyData.message,
-            id: null
-          }
-        }
-
-        const depositMoneyData = await firstValueFrom(this.walletSvc.depositMoney({
-            accountNumber: payload.receiverAccountNumber,
-            amount: payload.amount,
-            transactionId: transaction.id
-        }))
-
-        if(![HttpStatus.OK, HttpStatus.CREATED].includes(depositMoneyData.status)) {
-            await tx.transaction.update({
-                where: {
-                  id: transaction.id,
-                },
-                data: {
-                  status: 'FAILED',
-                },
-              });
-
-              const refundTransaction = await tx.transaction.create({
-                data: {
-                  ...payload,
-                
-                }
-                
-              })
-
-             // Implement refund mechanism
-             const refundMoney = await firstValueFrom(this.walletSvc.depositMoney({
-              accountNumber: payload.senderAccountNumber,
-              amount: payload.amount,
-              transactionId: refundTransaction.id
-             }))
-
-             console.log({ refundMoney })
-
-             if(![HttpStatus.OK, HttpStatus.CREATED].includes(refundMoney.status)) {
-              return {
-                status: refundMoney.status,
-                message: 'Transaction failed and we could not perform refund operation',
-                id: null
-              }
-             }
-
-             return {
-              status: depositMoneyData.status,
-              message: depositMoneyData.message,
-              id: null,
-             }
-
-        }
+      if (![HttpStatus.OK, HttpStatus.CREATED].includes(withdrawMoneyData.status)) {
+        await this.transactionRepository.update({
+          id: transaction.id,
+        }, {
+          status: 'FAILED'
+        })
 
         return {
-          status: HttpStatus.OK,
-          message: 'Transaction successful!',
-          id: transaction.id
+          status: HttpStatus.CONFLICT,
+          message: withdrawMoneyData.message,
+          id: null
         }
-      });
+      }
 
-      return result;
-    } catch (ignored) {
-      //TODO: Rollback
+      const depositMoneyData = await firstValueFrom(this.walletSvc.depositMoney({
+          accountNumber: payload.receiverAccountNumber,
+          amount: payload.amount,
+          transactionId: transaction.id
+      }))
 
+      if(![HttpStatus.OK, HttpStatus.CREATED].includes(depositMoneyData.status)) {
+         
+
+          await this.transactionRepository.update({
+            id: transaction.id,
+          }, { status: 'FAILED' })
+
+          const refundTransaction = await this.transactionRepository.create({ ...payload }).save();
+
+
+           // Implement refund mechanism
+           const refundMoney = await firstValueFrom(this.walletSvc.depositMoney({
+            accountNumber: payload.senderAccountNumber,
+            amount: payload.amount,
+            transactionId: refundTransaction.id
+           }))
+
+
+           if(![HttpStatus.OK, HttpStatus.CREATED].includes(refundMoney.status)) {
+            return {
+              status: refundMoney.status,
+              message: 'Transaction failed and we could not perform refund operation',
+              id: null
+            }
+           }
+
+           return {
+            status: depositMoneyData.status,
+            message: depositMoneyData.message,
+            id: null,
+           }
+    }
+
+    return {
+      status: HttpStatus.OK,
+      message: 'Transaction successful',
+      id: transaction.id
+    }
+
+  } catch(error) {
       return {
         status: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Something went wrong while performing a transaction.',
+        message: 'Something went wrong!',
         id: null
       }
-    }
+  } finally {
+
   }
+}
 
   public async validateTransaction(data: ValidateTransactionDto): Promise<ValidateTransactionResponse> {
-      const transaction = await this.db.transaction.findFirst({
+  
+
+      const transaction = await this.transactionRepository.findOne({
         where: {
           id: data.transactionId
         }

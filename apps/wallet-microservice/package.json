@@ -7,11 +7,13 @@
   "license": "MIT",
   "scripts": {
     "prebuild": "rimraf dist",
+    "build": "nest build",
     "proto:wallets": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/tew-protos --ts_proto_out=src/wallet node_modules/tew-protos/wallet.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
     "proto:transactions": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/tew-protos --ts_proto_out=src/wallet node_modules/tew-protos/transactions.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
     "start": "nest start",
     "start:dev": "npm run prebuild && nest start --watch",
-    "proto:install": "npm i git@github.com:eliemugenzi/tew-protos.git"
+    "proto:install": "npm i git@github.com:eliemugenzi/tew-protos.git",
+    "migrate-and-start": "npx prisma migrate deploy && npx prisma generate && npm start"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.11.2",
@@ -23,6 +25,7 @@
     "@nestjs/microservices": "^10.4.1",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.4.1",
+    "@nestjs/typeorm": "^10.0.2",
     "@prisma/client": "^5.19.1",
     "@sendgrid/mail": "^8.1.3",
     "bcryptjs": "^2.4.3",
@@ -35,7 +38,8 @@
     "pg": "^8.12.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "tew-protos": "github:eliemugenzi/tew-protos"
+    "tew-protos": "github:eliemugenzi/tew-protos",
+    "typeorm": "^0.3.20"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.4.5",

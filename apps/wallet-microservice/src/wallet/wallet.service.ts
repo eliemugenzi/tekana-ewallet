@@ -1,5 +1,4 @@
 import { HttpStatus, Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
 import {
   CreateWalletDto,
   DepositMoneyDto,
@@ -18,35 +17,46 @@ import {
   TopupMoneyResponse,
   WithdrawMoneyResponse,
 } from './wallet.pb';
-import { TRANSACTION_SERVICE_NAME, TransactionServiceClient } from './transactions.pb';
+import {
+  TRANSACTION_SERVICE_NAME,
+  TransactionServiceClient,
+} from './transactions.pb';
 import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Wallet } from './entities/wallet.entity';
+import { Repository } from 'typeorm';
+import { WalletActivityLog } from './entities/wallet-activity-log.entity';
 
 @Injectable()
 export class WalletService implements OnModuleInit {
+  @InjectRepository(Wallet)
+  private readonly walletRepository: Repository<Wallet>;
+  @InjectRepository(WalletActivityLog)
+  private readonly activityLogRepository: Repository<WalletActivityLog>;
   private transactionSvc: TransactionServiceClient;
 
   @Inject(TRANSACTION_SERVICE_NAME)
   private readonly client: ClientGrpc;
 
-  constructor(private readonly db: DatabaseService) {}
-
   onModuleInit() {
-      this.transactionSvc = this.client.getService<TransactionServiceClient>(TRANSACTION_SERVICE_NAME);
+    this.transactionSvc = this.client.getService<TransactionServiceClient>(
+      TRANSACTION_SERVICE_NAME,
+    );
   }
 
   public async createWallet(
     payload: CreateWalletDto,
   ): Promise<NewWalletResponse> {
-    console.log({ payload })
     const accountNumber = this.generateAccountNumber(payload.userId);
 
-    await this.db.wallet.create({
-      data: {
+    await this.walletRepository
+      .create({
         ...payload,
         accountNumber,
-      },
-    });
+        balance: 0,
+      })
+      .save();
 
     return {
       status: HttpStatus.CREATED,
@@ -55,7 +65,7 @@ export class WalletService implements OnModuleInit {
   }
 
   public async findWallet(payload: FindWalletDto): Promise<FindWalletResponse> {
-    const foundWallet = await this.db.wallet.findFirst({
+    const foundWallet = await this.walletRepository.findOne({
       where: {
         accountNumber: payload.accountNumber,
       },
@@ -85,7 +95,7 @@ export class WalletService implements OnModuleInit {
   }
 
   public async getWallets(payload: GetWalletsDto): Promise<GetWalletsResponse> {
-    const wallets = await this.db.wallet.findMany({
+    const wallets = await this.walletRepository.find({
       where: {
         userId: payload.userId,
       },
@@ -109,15 +119,20 @@ export class WalletService implements OnModuleInit {
   public async withdrawMoney(
     data: WithdrawMoneyDto,
   ): Promise<WithdrawMoneyResponse> {
-    const foundTransaction = await firstValueFrom(this.transactionSvc.validateTransaction({ transactionId: data.transactionId }));
+    const foundTransaction = await firstValueFrom(
+      this.transactionSvc.validateTransaction({
+        transactionId: data.transactionId,
+      }),
+    );
 
-    if(foundTransaction.status !== HttpStatus.OK) {
+    if (foundTransaction.status !== HttpStatus.OK) {
       return {
         status: HttpStatus.BAD_REQUEST,
-        message: 'Invalid transaction'
-      }
+        message: 'Invalid transaction',
+      };
     }
-    const wallet = await this.db.wallet.findFirst({
+
+    const wallet = await this.walletRepository.findOne({
       where: {
         accountNumber: data.accountNumber,
       },
@@ -130,14 +145,14 @@ export class WalletService implements OnModuleInit {
       };
     }
 
-    if (Number(wallet.balance) < data.amount) {
+    if (wallet.balance < data.amount) {
       return {
         status: HttpStatus.CONFLICT,
         message: 'Insufficient balance to perform this operation',
       };
     }
 
-    const similarActivity = await this.db.walletActivityLog.findFirst({
+    const similarActivity = await this.activityLogRepository.findOne({
       where: {
         transactionId: data.transactionId,
         action: 'DEBIT',
@@ -152,56 +167,48 @@ export class WalletService implements OnModuleInit {
     }
 
     try {
-      const result = await this.db.$transaction(async (tx) => {
-        await tx.wallet.update({
-          where: {
-            id: wallet.id,
-          },
-          data: {
-            balance: {
-              decrement: data.amount,
-            },
-          },
-        });
-
-        await tx.walletActivityLog.create({
-            data: {
-                walletId: wallet.id,
-                amount: data.amount,
-                action: 'DEBIT',
-                transactionId: data.transactionId
-            }
+      await this.walletRepository.update(
+        { id: wallet.id },
+        { balance: wallet.balance - data.amount },
+      );
+      await this.activityLogRepository
+        .create({
+          walletId: wallet.id,
+          amount: data.amount,
+          action: 'DEBIT',
+          transactionId: data.transactionId,
         })
+        .save();
 
-        return {
-          status: HttpStatus.OK,
-          message: 'Withdrawal is successful!'
-        }
-      });
-
-      return result;
-    } catch (ignored) {
-      //TODO:  Rollback
+      return {
+        status: HttpStatus.OK,
+        message: 'Withdrawal is successful!',
+      };
+    } catch (error) {
       return {
         status: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Something went wrong!'
-      }
+        message: 'Something went wrong!',
+      };
     }
   }
 
   public async depositMoney(
     data: DepositMoneyDto,
   ): Promise<DepositMoneyResponse> {
-    const foundTransaction = await firstValueFrom(this.transactionSvc.validateTransaction({ transactionId: data.transactionId }));
+    const foundTransaction = await firstValueFrom(
+      this.transactionSvc.validateTransaction({
+        transactionId: data.transactionId,
+      }),
+    );
 
-    if(foundTransaction.status !== HttpStatus.OK) {
+    if (foundTransaction.status !== HttpStatus.OK) {
       return {
         status: HttpStatus.BAD_REQUEST,
-        message: 'Invalid transaction'
-      }
+        message: 'Invalid transaction',
+      };
     }
 
-    const wallet = await this.db.wallet.findFirst({
+    const wallet = await this.walletRepository.findOne({
       where: {
         accountNumber: data.accountNumber,
       },
@@ -214,7 +221,7 @@ export class WalletService implements OnModuleInit {
       };
     }
 
-    const similarOperation = await this.db.walletActivityLog.findFirst({
+    const similarOperation = await this.activityLogRepository.findOne({
       where: {
         transactionId: data.transactionId,
         action: 'CREDIT',
@@ -228,105 +235,94 @@ export class WalletService implements OnModuleInit {
     }
 
     try {
-      const result = await this.db.$transaction(async (tx) => {
-        await tx.wallet.update({
-          where: {
-            id: wallet.id,
-          },
-          data: {
-            balance: {
-              increment: data.amount,
-            },
-          },
-        });
+      const newBalance = parseFloat(wallet.balance.toString()) + data.amount;
 
-        await tx.walletActivityLog.create({
-            data: {
-                walletId: wallet.id,
-                transactionId: data.transactionId,
-                action: 'CREDIT',
-                amount: data.amount
-        
-            }
+      await this.walletRepository
+        .createQueryBuilder()
+        .update(Wallet)
+        .set({ balance: newBalance })
+        .where('id=:id', { id: wallet.id })
+        .execute();
+      await this.activityLogRepository
+        .create({
+          walletId: wallet.id,
+          amount: data.amount,
+          action: 'CREDIT',
+          transactionId: data.transactionId,
         })
-
-        return {
-          status: HttpStatus.CREATED,
-          message: 'Done'
-        }
-      });
-
-      return result;
-
-      
-    } catch (ignored) {
-      //TODO: Rollback
+        .save();
 
       return {
+        status: HttpStatus.OK,
+        message: 'Deposit is successful!',
+      };
+    } catch (error) {
+      return {
         status: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Something went wrong...'
-      }
+        message: 'Something went wrong!',
+      };
     }
   }
 
   public async topUp(data: TopUpDto): Promise<TopupMoneyResponse> {
-    const foundWallet = await this.db.wallet.findFirst({
+    const foundWallet = await this.walletRepository.findOne({
       where: {
-        accountNumber: data.accountNumber
-      }
-    })
+        accountNumber: data.accountNumber,
+      },
+    });
 
-    if(!foundWallet) {
+    if (!foundWallet) {
       return {
         status: HttpStatus.NOT_FOUND,
-        message: 'Wallet not found'
-      }
+        message: 'Wallet not found',
+      };
     }
 
-    await this.db.wallet.update({
-      where: {
-        id: foundWallet.id
-      },
-      data: {
-        balance: {
-          increment: data.amount
-        }
-      }
-    })
+    const newBalance = parseFloat(foundWallet.balance.toString()) + data.amount;
+
+    await this.walletRepository
+      .createQueryBuilder()
+      .update(Wallet)
+      .set({ balance: newBalance })
+      .where('id=:id', { id: foundWallet.id })
+      .execute();
 
     return {
       status: HttpStatus.OK,
-      message: 'Wallet topup complete!'
-    }
+      message: 'Wallet topup complete!',
+    };
   }
 
-  public async getActivityLog(data: WalletActivityLogsDto): Promise<ActivityLogResponse> {
+  public async getActivityLog(
+    data: WalletActivityLogsDto,
+  ): Promise<ActivityLogResponse> {
     const offset = data.limit * (data.page - 1);
-    const foundWallet = await this.db.wallet.findFirst({
+
+    const foundWallet = await this.walletRepository.findOne({
       where: {
         accountNumber: data.accountNumber,
-      }
-    })
+      },
+    });
 
-    if(!foundWallet) {
+    if (!foundWallet) {
       return {
         status: HttpStatus.NOT_FOUND,
         message: 'Wallet not found',
         data: null,
-        meta:  null
-      }
+        meta: null,
+      };
     }
 
-    const activityLogs = await this.db.walletActivityLog.findMany({
+    const activityLogs = await this.activityLogRepository.find({
       where: {
-        walletId: foundWallet.id
+        walletId: foundWallet.id,
       },
       skip: offset,
       take: data.limit,
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+      order: {
+        createdAt: 'DESC',
+      },
+    });
 
     return {
       status: HttpStatus.OK,
@@ -335,9 +331,9 @@ export class WalletService implements OnModuleInit {
       meta: {
         page: data.page,
         pages: Math.ceil(activityLogs.length / data.limit),
-        total: activityLogs.length
-      }
-    }
+        total: activityLogs.length,
+      },
+    };
   }
 
   private generateAccountNumber(userId: number): string {

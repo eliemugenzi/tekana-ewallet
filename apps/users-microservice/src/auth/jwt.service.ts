@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService as Jwt } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { DatabaseService } from 'src/database/database.service';
+import { User } from './entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class JwtService {
-    constructor(private readonly jwt: Jwt, private readonly db: DatabaseService) {}
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>;
+    constructor(private readonly jwt: Jwt) {}
     public async decode(token: string): Promise<any> {
         return this.jwt.decode(token, null);
     }
@@ -34,9 +38,15 @@ export class JwtService {
     }
 
     public async validateUser(decoded: any): Promise<User> {
-        const foundUser = await this.db.user.findFirst({
+        // const foundUser = await this.db.user.findFirst({
+        //     where: {
+        //         id: decoded?.id,
+        //     }
+        // })
+
+        const foundUser = await this.userRepository.findOne({
             where: {
-                id: decoded?.id,
+                id: decoded.id
             }
         })
 
