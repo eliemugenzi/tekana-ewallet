@@ -15,7 +15,7 @@ import { AuthController } from './auth.controller';
       options: {
         package: USERS_PACKAGE_NAME,
         protoPath: 'node_modules/tew-protos/users.proto',
-        url: `${process.env.URL}:${process.env.USERS_PORT}`
+        url: `${process.env.USER_SERVICE_URL}:${process.env.USER_SERVICE_PORT}`
       }
     }])
   ],

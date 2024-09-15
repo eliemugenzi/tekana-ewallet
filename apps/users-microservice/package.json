@@ -11,7 +11,9 @@
     "proto:notifications": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/tew-protos --ts_proto_out=src/notification node_modules/tew-protos/notifications.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb",
     "start": "nest start",
     "start:dev": "npm run prebuild && nest start --watch",
-    "proto:install": "npm i git@github.com:eliemugenzi/tew-protos.git"
+    "proto:install": "npm i git@github.com:eliemugenzi/tew-protos.git",
+    "build": "nest build",
+    "migrate-and-start": "npx prisma migrate deploy && npx prisma generate && npm start"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.11.2",

@@ -1,6 +1,6 @@
-FROM node:14-alpine as build
-WORKDIR /usr/local/tekana-ewallet/api-gateway
-COPY package*.json ./
+FROM node:lts-alpine as build
+WORKDIR /usr/local/tekana-api-gateway
+COPY . .
 RUN apk add --no-cache git
 RUN apk -U --no-cache add protobuf protobuf-dev
 RUN npm run proto:install

@@ -1,0 +1,165 @@
+version: '3.7'
+
+services:
+
+  tekana-user-service:
+    image: "tekana-user-service:dev"
+    networks:
+      - "frontend"
+      - "backend"
+      - "userdomain"
+    ports:
+      - "50051:50051"
+    build:
+      context: "./apps/users-microservice"
+    depends_on:
+      - "tew-users"
+      - "redis"
+    environment:
+      NODE_ENV: "test"
+      URL: "0.0.0.0"
+      USERS_PORT: "50051"
+      DATABASE_URL: ${USERS_DATABASE_URL}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      EMAIL_SENDER_NAME: ${EMAIL_SENDER_NAME}
+      EMAIL_SENDER: ${EMAIL_SENDER}
+
+
+  tekana-wallet-service:
+    image: "tekana-wallet-service:dev"
+    networks:
+      - "frontend"
+      - "backend"
+      - "walletdomain"
+    ports:
+      - "50052:50052"
+    build:
+      context: "./apps/wallet-microservice"
+    depends_on:
+      - "tew-wallets"
+    environment:
+      NODE_ENV: "test"
+      URL: "0.0.0.0"
+      DATABASE_URL: ${WALLETS_DATABASE_URL}
+      TRANSACTIONS_PORT: "50053"
+      PORT: "50052"
+
+
+  tekana-transactions-service:
+    image: "tekana-transactions-service:dev"
+    networks:
+      - "frontend"
+      - "backend"
+      - "transactiondomain"
+    ports:
+      - "50053:50053"
+    build:
+      context: "./apps/transactions-microservice"
+    depends_on:
+      - "tew-transactions"
+      - "tekana-wallet-service"
+    environment:
+      NODE_ENV: "test"
+      URL: "0.0.0.0"
+      PORT: "50053"
+      WALLET_SERVICE_URL: "tekana-wallet-service"
+      WALLETS_PORT: "50052"
+      DATABASE_URL: ${TRANSACTIONS_DATABASE_URL}
+
+  tekana-api-gateway:
+    image: "tekana-api-gateway:dev"
+    networks:
+      - "frontend"
+    ports:
+      - "3000:3000"
+    build:
+      context: "./apps/api-gateway"
+    depends_on:
+      - "tekana-transactions-service"
+      - "tekana-wallet-service"
+      - "tekana-user-service"
+    environment:
+      NODE_ENV: "test"
+      PORT: "3000"
+      USER_SERVICE_URL: "tekana-user-service"
+      USER_SERVICE_PORT: "50051"
+      WALLET_SERVICE_URL: "tekana-wallet-svc"
+      WALLET_SERVICE_PORT: "50052"
+      TRANSACTIONS_SERVICE_URL: "tekana-transaction-svc"
+      TRANSACTIONS_SERVICE_PORT: "50053"
+
+  # swagger-ui:
+  #   image: "swagger-ui:dev"
+  #   networks:
+  #     - "frontend"
+  #   ports:
+  #     - "8080:8080"
+  #   build:
+  #     context: "./docs"
+
+  tew-users:
+    image: "postgres:12.1-alpine"
+    networks:
+      - "userdomain"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 'Mysecret__123'
+      POSTGRES_DB: "tew-users"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tew-users"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: "on-failure"
+  
+  tew-wallets:
+    image: "postgres:12.1-alpine"
+    networks:
+      - "walletdomain"
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 'Mysecret__123'
+      POSTGRES_DB: "tew-wallets"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tew-wallets"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: "on-failure"
+
+  tew-transactions:
+    image: "postgres:12.1-alpine"
+    networks:
+      - "transactiondomain"
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 'Mysecret__123'
+      POSTGRES_DB: "tew-transactions"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tew-transactions"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: "on-failure"
+  redis:
+    image: redis/redis-stack-server:7.2.0-v6
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+    volumes:
+      - redis_data:/data
+volumes:
+ redis_data:
+networks:
+  frontend:
+  backend:
+  userdomain:
+  walletdomain:
+  transactiondomain:

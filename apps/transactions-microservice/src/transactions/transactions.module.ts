@@ -15,7 +15,7 @@ import { WALLET_SERVICE_NAME, WALLETS_PACKAGE_NAME } from './wallet.pb';
           name: WALLET_SERVICE_NAME,
           transport: Transport.GRPC,
           options: {
-            url: `${process.env.URL}:${process.env.WALLETS_PORT}`,
+            url: `${process.env.WALLET_SERVICE_URL}:${process.env.WALLETS_PORT}`,
             protoPath: 'node_modules/tew-protos/wallet.proto',
             package: WALLETS_PACKAGE_NAME
           }

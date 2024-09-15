@@ -14,7 +14,7 @@ import { TRANSACTION_SERVICE_NAME, TRANSACTIONS_PACKAGE_NAME } from './transacti
         name: TRANSACTION_SERVICE_NAME,
         transport: Transport.GRPC,
         options: {
-          url: `${process.env.URL}:${process.env.TRANSACTIONS_PORT}`,
+          url: `${process.env.TRANSACTIONS_SERVICE_URL}:${process.env.TRANSACTIONS_PORT}`,
           protoPath: 'node_modules/tew-protos/transactions.proto',
           package: TRANSACTIONS_PACKAGE_NAME
         }
