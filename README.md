@@ -53,7 +53,7 @@ Code source: Write the back-end solution with a minimum feature that showcases h
 
 1. These are the required features to be built:
 
-    - Create, Read customers (Registration)
+    - Create, Read users (Registration)
 
     - Create and read wallets of customers
 
