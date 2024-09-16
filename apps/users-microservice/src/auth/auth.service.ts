@@ -1,5 +1,4 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
 import { LoginRequestDto, RegisterRequestDto, ValidateTokenDto } from './auth.dto';
 import { LoginUserResponse, RegisterUserResponse, ValidateTokenResponse } from './users.pb';
 import { JwtService } from './jwt.service';
@@ -15,11 +14,6 @@ export class AuthService {
     private readonly userRepository: Repository<User>;
     constructor(private readonly jwtService: JwtService, @InjectQueue('email') private readonly emailQueue: Queue) {}
     public async register(payload: RegisterRequestDto): Promise<RegisterUserResponse> {
-        // const foundUser = await this.db.user.findFirst({
-        //     where: {
-        //         email: payload.email
-        //     }
-        // })
 
         const foundUser = await this.userRepository.findOne({
             where: {
@@ -34,12 +28,6 @@ export class AuthService {
             }
         }
 
-        // await this.db.user.create({
-        //     data: {
-        //         ...payload,
-        //         password: this.jwtService.encodePassword(payload.password),
-        //     }
-        // })
 
         await this.userRepository.create({
             ...payload,
@@ -56,11 +44,6 @@ export class AuthService {
     }
 
     public async login(payload: LoginRequestDto): Promise<LoginUserResponse> {
-    //   const foundUser = await this.db.user.findFirst({
-    //     where: {
-    //         email: payload.email
-    //     }
-    //   })
 
     const foundUser = await this.userRepository.findOne({
         where: {

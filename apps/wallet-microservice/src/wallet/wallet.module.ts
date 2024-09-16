@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { WalletController } from './wallet.controller';
-import { DatabaseService } from 'src/database/database.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TRANSACTION_SERVICE_NAME, TRANSACTIONS_PACKAGE_NAME } from './transactions.pb';
 import { TypeOrmModule } from '@nestjs/typeorm';

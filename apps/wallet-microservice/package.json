@@ -13,7 +13,10 @@
     "start": "nest start",
     "start:dev": "npm run prebuild && nest start --watch",
     "proto:install": "npm i git@github.com:eliemugenzi/tew-protos.git",
-    "migrate-and-start": "npx prisma migrate deploy && npx prisma generate && npm start"
+    "typeorm": "npm run build && npx typeorm -d dist/src/database/data-source.js",
+    "migration:generate": "npm run typeorm -- migration:generate",
+    "migration:run": "npm run typeorm -- migration:run",
+    "migration:revert": "npm run typeorm -- migration:revert"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.11.2",
