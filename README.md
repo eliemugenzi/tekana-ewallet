@@ -81,7 +81,7 @@ Code source: Write the back-end solution with a minimum feature that showcases h
 
 sample architecture considering the changes
 
-![My First Board (3)](https://user-images.githubusercontent.com/51251401/210193514-c62bda1e-053b-49dc-9642-5f7d50755875.jpg)
+![My First Board (3)](./assets/Screenshot%202024-09-16%20at%2020.14.05.png)
 
 1. Details of approach and why it was considered
 
@@ -112,7 +112,7 @@ sample architecture considering the changes
 
 2. Database Design
 
-![new design](https://user-images.githubusercontent.com/51251401/210474335-56ade410-2bc4-405c-8d88-d64f53d2ed75.png)
+![new design](./assets/Screenshot%202024-09-16%20at%2020.10.02.png)
 
 3. API EndPoints
 
