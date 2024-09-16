@@ -4,7 +4,6 @@ import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtService } from './jwt.service';
 import { JwtStrategy } from './strategy/jwt.strategy';
-import { DatabaseService } from 'src/database/database.service';
 import { BullModule } from '@nestjs/bullmq';
 import { EmailProcessor } from './email-processor.service';
 import { TypeOrmModule } from '@nestjs/typeorm';

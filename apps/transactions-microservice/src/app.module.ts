@@ -6,21 +6,13 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { dataSourceOptions } from './database/data-source';
 
 @Module({
   imports: [
     TransactionsModule,
     ConfigModule.forRoot(),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DATABASE_HOST,
-      port: Number(process.env.DATABASE_PORT),
-      database: process.env.DATABASE_NAME,
-      username: process.env.DATABASE_USER,
-      password: process.env.DATABASE_PASSWORD,
-      synchronize: true,
-      entities: ['dist/**/*.entity.{ts,js}'],
-    }),
+    TypeOrmModule.forRoot(dataSourceOptions),
   ],
   controllers: [AppController],
   providers: [
