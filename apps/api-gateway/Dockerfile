@@ -4,6 +4,9 @@ COPY . .
 RUN apk add --no-cache git
 RUN apk -U --no-cache add protobuf protobuf-dev
 RUN npm run proto:install
+RUN npm run proto:wallets
+RUN npm run proto:users
+RUN npm run proto:transactions
 RUN npm install
 COPY . .
 RUN npm run prebuild

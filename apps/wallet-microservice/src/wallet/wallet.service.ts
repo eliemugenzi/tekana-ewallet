@@ -58,10 +58,13 @@ export class WalletService implements OnModuleInit {
       })
       .save();
 
-    return {
-      status: HttpStatus.CREATED,
-      message: 'Wallet has been created!',
-    };
+      const response = {
+        status: HttpStatus.CREATED,
+        message: 'Wallet has been created!',
+        accountNumber,
+      };
+
+    return response;
   }
 
   public async findWallet(payload: FindWalletDto): Promise<FindWalletResponse> {
@@ -90,7 +93,7 @@ export class WalletService implements OnModuleInit {
     return {
       status: HttpStatus.OK,
       message: 'Wallet retrieved',
-      data: foundWallet,
+      data: foundWallet
     };
   }
 

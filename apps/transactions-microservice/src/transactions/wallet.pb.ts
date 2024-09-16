@@ -18,6 +18,7 @@ export interface NewWalletRequest {
 export interface NewWalletResponse {
   status: number;
   message: string;
+  accountNumber: string;
 }
 
 export interface FindWalletRequest {
@@ -77,6 +78,35 @@ export interface WithdrawMoneyResponse {
   message: string;
 }
 
+export interface TopupMoneyRequest {
+  accountNumber: string;
+  amount: number;
+}
+
+export interface TopupMoneyResponse {
+  status: number;
+  message: string;
+}
+
+export interface ActivityLogRequest {
+  accountNumber: string;
+  page: number;
+  limit: number;
+}
+
+export interface ActivityLogResponseMeta {
+  page: number;
+  pages: number;
+  total: number;
+}
+
+export interface ActivityLogResponse {
+  status: number;
+  message: string;
+  data: WalletActivityLog[];
+  meta: ActivityLogResponseMeta | undefined;
+}
+
 export const WALLETS_PACKAGE_NAME = "wallets";
 
 export interface WalletServiceClient {
@@ -89,6 +119,10 @@ export interface WalletServiceClient {
   depositMoney(request: DepositMoneyRequest): Observable<DepositMoneyResponse>;
 
   withdrawMoney(request: WithdrawMoneyRequest): Observable<WithdrawMoneyResponse>;
+
+  topup(request: TopupMoneyRequest): Observable<TopupMoneyResponse>;
+
+  getWalletActivityLogs(request: ActivityLogRequest): Observable<ActivityLogResponse>;
 }
 
 export interface WalletServiceController {
@@ -111,11 +145,25 @@ export interface WalletServiceController {
   withdrawMoney(
     request: WithdrawMoneyRequest,
   ): Promise<WithdrawMoneyResponse> | Observable<WithdrawMoneyResponse> | WithdrawMoneyResponse;
+
+  topup(request: TopupMoneyRequest): Promise<TopupMoneyResponse> | Observable<TopupMoneyResponse> | TopupMoneyResponse;
+
+  getWalletActivityLogs(
+    request: ActivityLogRequest,
+  ): Promise<ActivityLogResponse> | Observable<ActivityLogResponse> | ActivityLogResponse;
 }
 
 export function WalletServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["createWallet", "findWallet", "getWallets", "depositMoney", "withdrawMoney"];
+    const grpcMethods: string[] = [
+      "createWallet",
+      "findWallet",
+      "getWallets",
+      "depositMoney",
+      "withdrawMoney",
+      "topup",
+      "getWalletActivityLogs",
+    ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("WalletService", method)(constructor.prototype[method], method, descriptor);

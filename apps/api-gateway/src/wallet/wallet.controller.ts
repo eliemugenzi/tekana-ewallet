@@ -1,13 +1,15 @@
-import { Body, Controller, Get, HttpStatus, Inject, OnModuleInit, Param, Post, Query, Req, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Inject, OnModuleInit, Param, Post, Query, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ActivityLogResponse, DepositMoneyRequest, DepositMoneyResponse, FindWalletRequest, FindWalletResponse, GetWalletsRequest, GetWalletsResponse, NewWalletRequest, NewWalletResponse, TopupMoneyRequest, TopupMoneyResponse, WALLET_SERVICE_NAME, WalletServiceClient } from './wallet.pb';
 import { ClientGrpc } from '@nestjs/microservices';
 import { AuthGuard } from '../auth/auth.guard';
-import { Request } from 'express';
-import { Observable } from 'rxjs';
+import { Request, Response } from 'express';
+import { firstValueFrom, Observable } from 'rxjs';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {  DepositMoneyRequestDto, NewWalletRequestDto, TopupMoneyRequestDto } from './dto/wallet-request.dto';
 import { ActivityLogResponseDto, DepositMoneyResponseDto, FindWalletResponseDto, GetWalletsResponseDto, NewWalletResponseDto, TopupMoneyResponseDto } from './dto/wallet-response.dto';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+
+import * as PDFDocument from 'pdfkit';
 
 @ApiTags("wallet")
 @Controller('wallet')
@@ -100,6 +102,52 @@ export class WalletController implements OnModuleInit {
         page,
         limit
        })
+    }
+
+    @Get('/:accountNumber/statement')
+    @UseGuards(AuthGuard)
+    private async generateStatement(@Query('page') page: number, @Query('limit') limit: number, @Param('accountNumber') accountNumber: string, @Res() res: Response) {
+        const transactions = await firstValueFrom(this.svc.getWalletActivityLogs({
+            accountNumber,
+            page,
+            limit
+        }));
+
+        const doc = new PDFDocument();
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=${accountNumber}-statement.pdf`);
+        doc.pipe(res);
+
+        // Document title
+        doc.fontSize(20)
+        .text('Transaction statement', { align: 'center' });
+        doc.moveDown();
+        const headers = ['ID', 'Account Number', 'Type', 'Amount']
+        doc.fontSize(14).text(headers[0], 50)
+        .text(headers[1], 150)
+        .text(headers[2], 350)
+        .text(headers[3], 450);
+        doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
+        doc.moveDown();
+
+        transactions.data.forEach((transaction)=> {
+            doc.fontSize(12).text(transaction.transactionId.toString(), 50)
+            .text(accountNumber, 150)
+            .text(transaction.action, 350)
+            .text(transaction.amount.toString(), 450);
+
+            doc.moveTo(50, doc.y + 5).lineTo(550, doc.y + 5).stroke();
+
+
+            doc.moveDown();
+        })
+
+        doc.moveTo(50, doc.page.height - 50)
+       .lineTo(550, doc.page.height - 50)
+       .stroke();
+
+        doc.end();
+
     }
 
 

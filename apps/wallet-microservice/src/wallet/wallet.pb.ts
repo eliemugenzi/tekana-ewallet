@@ -6,7 +6,6 @@
 
 /* eslint-disable */
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
-import { Decimal } from "@prisma/client/runtime/library";
 import { Observable } from "rxjs";
 
 export const protobufPackage = "wallets";
@@ -19,6 +18,7 @@ export interface NewWalletRequest {
 export interface NewWalletResponse {
   status: number;
   message: string;
+  accountNumber: string;
 }
 
 export interface FindWalletRequest {
