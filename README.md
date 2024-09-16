@@ -1,73 +1,205 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Mobile Wallet API project
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Your mission is to rebuild from scratch a back-end solution for a legacy platform that serves 1 million customers around the world.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Project Scope
 
-## Description
+The scope of this project includes the design and development of a new back-end solution that will replace the existing one.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This will involve the following activities:
 
-## Installation
+- Research and analysis of current technology stack and requirements
+- Selection of new technology stack
+- Design of new architecture and solution
+- Development of new back-end solution
+- Integration of new back-end solution with existing front-end and other systems
+- Testing and deployment of new back-end solution
 
-```bash
-$ yarn install
+## Strategy
+
+1. Understand the business requirements and current system:
+   - Meet with the business team and product owner to understand the requirements for the new system and the pain points of the current system.
+   - Review the current system architecture and codebase to understand the limitations and challenges of the current solution.
+2. Determine the tech stack:
+    - Based on the business requirements and the desired scalability, availability, and performance of the new system, determine the appropriate tech stack for the new back-end solution. This may include languages, frameworks, database systems, and cloud infrastructure.
+3. Design the system architecture:
+    - Design the overall system architecture, including the relationships between the various components and how they will communicate with each other.
+    - Consider factors such as scalability, security, and maintainability in the design.
+
+4. Implement the back-end solution:
+    - Using the chosen tech stack, implement the back-end solution based on the designed system architecture.
+    - Follow engineering best practices, such as writing clean, well-documented code and performing thorough testing.
+5. Integrate with the front-end and other components:
+    - Work with the front-end and other teams to integrate the back-end solution with the rest of the system.
+    - Ensure that the back-end solution is properly secured and that any sensitive data is properly encrypted.
+6. Deploy and test the pilot system:
+    - Deploy the pilot system to a staging environment and perform thorough testing to ensure that it is stable and meets the business requirements.
+    - Address any issues that are discovered during testing.
+7. Launch the pilot system:
+    - Once the pilot system has been thoroughly tested and any issues have been resolved, launch the pilot system to a small group of users for further testing.
+    - Monitor the system closely and address any issues that arise.
+8. Roll out the new system to all users:
+    - Once the pilot system has been successfully tested and any issues have been addressed, roll out the new system to all users.
+    - Continue to monitor the system and address any issues as they arise.
+
+## Proposed Changes
+
+This Changes are for demostration of what will happens while rebuilding the backend.
+I considered APIs that handle Customer, Wallet, and Transactions Operations
+
+### Business Requirements
+
+Code source: Write the back-end solution with a minimum feature that showcases how you would design from the code source.
+
+1. These are the required features to be built:
+
+    - Create, Read customers (Registration)
+
+    - Create and read wallets of customers
+
+    - Create and read transactions.
+
+### Tech Stack
+
+1. API Layer
+
+    [NestJS + Express](https://nestjs.com/) acts as the API Layer for the architecture. It takes care of listening for client requests and calling the appropriate back-end microservice to fulfill them.
+
+2. Microservice Layer
+
+    [gRPC](https://grpc.io/) was chosen as the framework to do the microservices. [Protocol buffers](https://developers.google.com/protocol-buffers/) was used as the data interchange format between the client (REST API) and the server (gRPC microservices). NestJS is still the framework used to create the gRPC Microservices.
+
+3. Persistence Layer
+
+    PostgreSQL is used as the database and TypeORM is used as the Object-Relational Mapper (ORM).
+
+4. Deployment
+
+    Deployment is done with containers in mind. A Docker Compose file along with Dockerfiles for each project are given to run the whole thing on any machine. For production, it's always recommended to use [Kubernetes](https://kubernetes.io/) for these kinds of microservices architecture to deploy in production.
+
+### System architecture
+
+sample architecture considering the changes
+
+![My First Board (3)](https://user-images.githubusercontent.com/51251401/210193514-c62bda1e-053b-49dc-9642-5f7d50755875.jpg)
+
+1. Details of approach and why it was considered
+
+    - Load balancers: To handle the high volume of requests and traffic, the system should use load balancers to distribute requests across multiple servers. This can help ensure that the system remains responsive and can scale horizontally as needed.
+
+    - Application servers: The application servers should be responsible for handling requests from the load balancers, processing them, and returning responses. The application servers should be horizontally scalable and fault-tolerant, and should use a microservices architecture to break up the functionality into smaller, independent services.
+
+    - Database: The database should be able to handle the large volume of data and requests from the application servers. Depending on the specific needs of the system, this could be a traditional relational database, a NoSQL database, or a distributed database.
+
+    - Cache: To improve performance, the system may use a cache to store frequently-accessed data. This could be a distributed cache, such as Memcached or Redis, or a cache that is integrated with the database.
+
+    - Monitoring and logging: To ensure that the system is running smoothly and to facilitate debugging and maintenance, the system should have robust monitoring and logging capabilities. This could include tools such as log aggregators, error tracking systems, and monitoring dashboards.
+
+    - Security: To protect sensitive user data and prevent attacks, the system should have robust security measures in place. This could include measures such as encryption, authentication, and secure coding practices.
+
+    - Deployment and infrastructure: To ensure that the system is highly available and can scale as needed, the system should be deployed in the cloud using infrastructure-as-code practices. This could include tools such as Kubernetes.
+
+### Back-end Solution
+
+1. This architecture implements the following Microservice Design Patterns:
+
+    1. [Microservice Architecture](https://microservices.io/patterns/microservices.html)
+    2. [Subdomain Decomposition](https://microservices.io/patterns/decomposition/decompose-by-subdomain.html)
+    3. [Externalized Configuration](https://microservices.io/patterns/externalized-configuration.html)
+    4. [Remote Procedure Invocation](https://microservices.io/patterns/communication-style/rpi.html)
+    5. [API Gateway](https://microservices.io/patterns/apigateway.html)
+    6. [Database per Service](https://microservices.io/patterns/data/database-per-service.html)
+
+2. Database Design
+
+![new design](https://user-images.githubusercontent.com/51251401/210474335-56ade410-2bc4-405c-8d88-d64f53d2ed75.png)
+
+3. API EndPoints
+
+| method             | resource         | description                                                                                    |
+|:-------------------|:-----------------|:-----------------------------------------------------------------------------------------------|
+| `POST`             | `/auth/signup`         | creates a new customer in the DB (object customer to be included in request's body)                                     |
+| `PUT`              | `/auth/login`     | authenticate customer (object customer to be included in request's body) returns the specified token of the user                   |                 |
+| `POST` (auth)      | `/wallet`         | creates a wallet for the customer in the DB (object wallet to be included in request's body) and (token must be provided in request header)           |
+| `GET` (auth)       | `/wallet`     | return lists of wallet that belong to the customer (token must be provided in request header)        |
+| `POST` (auth)      | `/wallet/deposit`         | Deposit money to customer wallet for testing case only (object walletDeposit to be included in request's body) and (token must be provided in request header)                     |
+| `GET` (auth)       | `/wallet/:accountNumber`     | return customer wallet information accNumber must be provided in header params and (token must be provided in request header)      |
+| `GET` (auth)       | `/transaction`         | creates a new user transaction (object transaction to be includued in request's body)  and (token must be provided in request header)            |
+| `GET` (auth)       | `/wallet/:accountNumber/transactions`     | return all wallet transactions, accNumber must be provided in header params and (token must be provided in request header)    |
+
+### Integrate with the front-end and other components
+
+- For Sake Of Demo Swagger UI is used to test and run APIs
+
+## Source Codes
+
+### Project Organization
+
+
+1. `api-gateway` - This directory consists of the API Gateway project. All code relating to the API Gateway resides here.
+
+5. `tekana-user-service` - This directory consists of all files/code relating to the User authentication Microservice project.
+
+6. `tekana-wallet-service` - This directory consists of all files/code relating to the Wallet Microservice project.
+
+7. `tekana-transactions-service` - This directory consists of all files/code relating to the Transaction Microservice project.
+
+
+### How to Run
+
+1. System Requirements - must be Linux/Mac
+
+- [Node.js](https://nodejs.org/en/) - v14 Recommended
+- [Docker](https://docs.docker.com/install/) - latest
+- [Docker Compose](https://docs.docker.com/compose/install/) - latest
+
+2. On the Terminal, The start script will install all npm dependencies for all projects, lint the code, compile the code, build the artifacts (Docker images) and run them via `docker-compose`.
+
+- Clone the repository
+
+```
+git clone git@github.com:eliemugenzi/tekana-ewallet.git
 ```
 
-## Running the app
-
-```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+- Setup the project environment variables by referring to the example file `.env.example`
+```
+cp .env.example .env
 ```
 
-## Test
+- Build the docker images
 
-```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+```
+docker-compose build --no-cache
 ```
 
-## Support
+- Run the docker images
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```
+docker-compose up
+```
 
-## Stay in touch
+3. Once the start script is done, the API Gateway will listening on [http://localhost:3000](http://localhost:3000)
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
 
-## License
+5. To test the API using Swagger UI, open [http://localhost:3000/docs](http://localhost:3000/docs)
 
-Nest is [MIT licensed](LICENSE).
+## Roadmap
+
+### General
+
+- [ ] Add Integration Tests
+- [ ] Add Kubernetes Manifests
+- [x] Pre-populate DBs
+- [ ] Configure NGinx Load Balancer
+- [ ] Distributed Tracing
+
+### API Gateway
+
+- [ ] Add event sourcing with Kafka
+- [ ] Add request/input data validation
+- [ ] Add Logs Monitoring
+
+### Microservices
+
+- [ ] Add unit tests
+- [ ] Add caching with Redis

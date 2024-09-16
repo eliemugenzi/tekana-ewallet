@@ -8,7 +8,6 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, 
 import {  DepositMoneyRequestDto, NewWalletRequestDto, TopupMoneyRequestDto } from './dto/wallet-request.dto';
 import { ActivityLogResponseDto, DepositMoneyResponseDto, FindWalletResponseDto, GetWalletsResponseDto, NewWalletResponseDto, TopupMoneyResponseDto } from './dto/wallet-response.dto';
 import { CacheInterceptor } from '@nestjs/cache-manager';
-
 import * as PDFDocument from 'pdfkit';
 
 @ApiTags("wallet")
@@ -106,6 +105,11 @@ export class WalletController implements OnModuleInit {
 
     @Get('/:accountNumber/statement')
     @UseGuards(AuthGuard)
+    @ApiOperation({summary: 'Get a statement of transactions that were made on a specific account'})
+    @ApiParam({name: 'accountNumber', required: true, type: Number, description: 'Account number', example: '200-34-1726431580470'})
+    @ApiQuery({name: 'page', type: Number, required: false, example: 1, description: 'The current page in the pagination'})
+    @ApiQuery({name: 'limit', type: Number, required: false, example: 10, description: 'The data limit'})
+    @ApiBearerAuth()
     private async generateStatement(@Query('page') page: number, @Query('limit') limit: number, @Param('accountNumber') accountNumber: string, @Res() res: Response) {
         const transactions = await firstValueFrom(this.svc.getWalletActivityLogs({
             accountNumber,
@@ -120,9 +124,9 @@ export class WalletController implements OnModuleInit {
 
         // Document title
         doc.fontSize(20)
-        .text('Transaction statement', { align: 'center' });
+        .text(`Transaction statement for account: ${accountNumber}`, { align: 'center' });
         doc.moveDown();
-        const headers = ['ID', 'Account Number', 'Type', 'Amount']
+        const headers = ['Transaction ID', 'Account Number', 'Type', 'Amount']
         doc.fontSize(14).text(headers[0], 50)
         .text(headers[1], 150)
         .text(headers[2], 350)
@@ -130,6 +134,7 @@ export class WalletController implements OnModuleInit {
         doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
         doc.moveDown();
 
+        // Transactions table
         transactions.data.forEach((transaction)=> {
             doc.fontSize(12).text(transaction.transactionId.toString(), 50)
             .text(accountNumber, 150)
@@ -137,8 +142,6 @@ export class WalletController implements OnModuleInit {
             .text(transaction.amount.toString(), 450);
 
             doc.moveTo(50, doc.y + 5).lineTo(550, doc.y + 5).stroke();
-
-
             doc.moveDown();
         })
 
