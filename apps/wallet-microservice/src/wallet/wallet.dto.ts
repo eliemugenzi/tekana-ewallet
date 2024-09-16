@@ -1,6 +1,11 @@
 import { IsString, IsNumber, IsEnum, Min } from 'class-validator';
 import { ActivityLogRequest, DepositMoneyRequest, FindWalletRequest, GetWalletsRequest, NewWalletRequest, TopupMoneyRequest, WithdrawMoneyRequest } from "./wallet.pb";
-import { WalletType } from '@prisma/client';
+
+enum WalletType {
+    SAVING,
+    LOAN,
+    PERSONAL
+}
 
 export class CreateWalletDto implements NewWalletRequest {
     @IsNumber()
