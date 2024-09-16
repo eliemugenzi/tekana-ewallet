@@ -6,8 +6,15 @@ import { AuthModule } from './auth/auth.module';
 import { WalletModule } from './wallet/wallet.module';
 import { TransactionModule } from './transaction/transaction.module';
 
+
 @Module({
-  imports: [ConfigModule.forRoot(), AuthModule, WalletModule, TransactionModule],
+  imports: [
+    ConfigModule.forRoot(),
+     AuthModule,
+      WalletModule,
+       TransactionModule,
+     
+      ],
   controllers: [AppController],
   providers: [AppService],
 })

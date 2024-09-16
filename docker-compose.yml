@@ -95,6 +95,7 @@ services:
     image: "tekana-api-gateway:dev"
     networks:
       - "frontend"
+      - "redis-net"
     ports:
       - "3000:3000"
     build:
@@ -112,15 +113,6 @@ services:
       WALLET_SERVICE_PORT: "50052"
       TRANSACTIONS_SERVICE_URL: "tekana-transactions-service"
       TRANSACTIONS_SERVICE_PORT: "50053"
-
-  # swagger-ui:
-  #   image: "swagger-ui:dev"
-  #   networks:
-  #     - "frontend"
-  #   ports:
-  #     - "8080:8080"
-  #   build:
-  #     context: "./docs"
 
   tew-users:
     image: "postgres:12.1-alpine"
