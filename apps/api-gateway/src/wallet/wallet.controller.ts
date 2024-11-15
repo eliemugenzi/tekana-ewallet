@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpStatus, Inject, OnModuleInit, Param, Post, Query, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
-import { ActivityLogResponse, DepositMoneyRequest, DepositMoneyResponse, FindWalletRequest, FindWalletResponse, GetWalletsRequest, GetWalletsResponse, NewWalletRequest, NewWalletResponse, TopupMoneyRequest, TopupMoneyResponse, WALLET_SERVICE_NAME, WalletServiceClient } from './wallet.pb';
+import { ActivityLogResponse, DepositMoneyRequest, DepositMoneyResponse, FindWalletRequest, FindWalletResponse, GetWalletsRequest, GetWalletsResponse, NewWalletRequest, NewWalletResponse, TopupMoneyRequest, TopupMoneyResponse, WALLET_SERVICE_NAME, WalletServiceClient, WithdrawMoneyRequest, WithdrawMoneyResponse } from './wallet.pb';
 import { ClientGrpc } from '@nestjs/microservices';
 import { AuthGuard } from '../auth/auth.guard';
 import { Request, Response } from 'express';
@@ -74,6 +74,19 @@ export class WalletController implements OnModuleInit {
     @ApiResponse({ status: HttpStatus.OK, description: 'Money deposited', type: DepositMoneyResponseDto })
     private async depositMoney(@Body() body: DepositMoneyRequest): Promise<Observable<DepositMoneyResponse>> {
        return this.svc.depositMoney(body);
+    }
+
+    @Post('/withdraw')
+    @UseGuards(AuthGuard)
+    @ApiOperation({
+        summary: 'Withdral money to a specific wallet'
+    })
+    @ApiBody({type: DepositMoneyRequestDto})
+    @ApiBearerAuth()
+
+    @ApiResponse({ status: HttpStatus.OK, description: 'Withdraw successful!', type: DepositMoneyResponseDto })
+    private async withdrawMoney(@Body() body: WithdrawMoneyRequest): Promise<Observable<WithdrawMoneyResponse>> {
+       return this.svc.withdrawMoney(body);
     }
 
     @Post('/topup')
