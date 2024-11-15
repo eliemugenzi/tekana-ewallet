@@ -1,0 +1,73 @@
+name: Docker Build and Push Tekana eWallet
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    steps:
+      - name: Login to github packages
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: checkout to target branch
+        uses: actions/checkout@v2
+
+      - name: Set repo owner and repo name in env vars
+        env:
+          REPO_OWNER_NAME: ${{ github.repository }}
+        run: |
+          REPO_OWNER=$(echo "$REPO_OWNER_NAME" | awk '$1=$1' FS="/" OFS=" " | awk '{ print $1}' | tr '[:upper:]' '[:lower:]')
+          echo "REPO_OWNER=$REPO_OWNER" >> $GITHUB_ENV
+          echo {{ env.REPO_OWNER }}
+          REPO_NAME=$(echo "$REPO_OWNER_NAME" | awk '$1=$1' FS="/" OFS=" " | awk '{ print $2}')
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+          echo "REPO_NAME=$REPO_NAME"
+
+      - name: Set released tag in env vars
+        run: |
+          echo "RELEASE_VERSION=$(git describe --abbrev=0 --tags)" >> $GITHUB_ENV
+          export RELEASE_VERSION=$(git describe --abbrev=0 --tags)
+
+      - name: Throw error when tag name is invalid
+        if: ${{ !(contains(env.RELEASE_VERSION,'-production')) && !(contains(env.RELEASE_VERSION,'-uat')) && !(contains(env.RELEASE_VERSION,'-demo')) && !(contains(env.RELEASE_VERSION,'-dev')) && !(contains(env.RELEASE_VERSION,'-staging')) }}
+        run: |
+          exit "Invalid tag name. tag name should end with either -dev, -staging, -uat, -demo or -production"
+
+      - name: Build docker container for DEV environment
+        if: contains(env.RELEASE_VERSION,'-dev')
+        run: |
+          docker build -t ghcr.io/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}:${{ env.RELEASE_VERSION }} --build-arg profile=dev .
+
+      - name: Build docker container for Staging environment
+        if: contains(env.RELEASE_VERSION,'-staging')
+        run: |
+          docker build -t ghcr.io/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}:${{ env.RELEASE_VERSION }} --build-arg profile=staging .
+
+      - name: Build docker container for Demo UAT environment
+        if: contains(env.RELEASE_VERSION,'-demo')
+        run: |
+          docker build -t ghcr.io/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}:${{ env.RELEASE_VERSION }} --build-arg profile=demo-uat .
+
+      - name: Build docker container for UAT environment
+        if: contains(env.RELEASE_VERSION,'-uat')
+        run: |
+          docker build -t ghcr.io/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}:${{ env.RELEASE_VERSION }} --build-arg profile=uat .
+
+      - name: Build docker container for PRODUCTION environment
+        if: contains(env.RELEASE_VERSION,'-production')
+        run: |
+          docker build -t ghcr.io/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}:${{ env.RELEASE_VERSION }} --build-arg profile=prod .
+
+
+      - name: Push container image
+        run: |
+          docker push ghcr.io/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}:${{ env.RELEASE_VERSION }}
