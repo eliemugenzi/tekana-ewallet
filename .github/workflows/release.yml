@@ -50,7 +50,7 @@ jobs:
       - name: Build docker container for Staging environment
         if: contains(env.RELEASE_VERSION,'-staging')
         run: |
-          docker build -t ghcr.io/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}:${{ env.RELEASE_VERSION }} --build-arg profile=staging .
+          docker build -t ghcr.io/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}:${{ env.RELEASE_VERSION }}
 
       - name: Build docker container for Demo UAT environment
         if: contains(env.RELEASE_VERSION,'-demo')
